@@ -11,7 +11,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EditorConfigFiles Include="D:\Dev\tandem\tests\tandem-sdk-net\src\.editorconfig" />
+    <EditorConfigFiles Remove="D:\Dev\tandem\tests\tandem-sdk-net\src\.editorconfig" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="D:\Dev\tandem\tests\tandem-sdk-net\src\.editorconfig" />
   </ItemGroup>
 
 </Project>
