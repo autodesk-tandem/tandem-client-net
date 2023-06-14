@@ -89,7 +89,7 @@ namespace TandemSDK
 
                 if (item.Flags == ElementFlags.Room)
                 {
-                    if ((levelAttr != null) && item.Properties.TryGetValue(levelAttr.Id, out string level))
+                    if ((levelAttr != null) && item.Properties.TryGetValue(levelAttr.Id, out string? level))
                     {
                         var levelKey = Utils.Encoding.FromShortKey(level, ElementFlags.FamilyType);
 
@@ -150,23 +150,23 @@ namespace TandemSDK
                     {
                         userProps[propDef.Id] = prop.Value;
                     }
-                    if (string.Equals(propDef.Id, levelAttr.Id))
+                    if (string.Equals(propDef.Id, levelAttr?.Id))
                     {
                         level = Utils.Encoding.FromShortKey(prop.Value, ElementFlags.FamilyType);
                     }
-                    if (string.Equals(propDef.Id, levelOverrideAttr.Id))
+                    if (string.Equals(propDef.Id, levelOverrideAttr?.Id))
                     {
                         levelOverride = Utils.Encoding.FromShortKey(prop.Value, ElementFlags.FamilyType);
                     }
-                    if (string.Equals(propDef.Id, systemClassAttr.Id))
+                    if (string.Equals(propDef.Id, systemClassAttr?.Id))
                     {
                         systemClass = Convert.ToInt32(prop.Value);
                     }
-                    if (string.Equals(propDef.Id, systemClassOverrideAttr.Id))
+                    if (string.Equals(propDef.Id, systemClassOverrideAttr?.Id))
                     {
                         systemClassOverride = Convert.ToInt32(prop.Value);
                     }
-                    if (string.Equals(propDef.Id, roomAttr.Id))
+                    if (string.Equals(propDef.Id, roomAttr?.Id))
                     {
                         room = prop.Value;
                     }
@@ -218,7 +218,7 @@ namespace TandemSDK
                 {
                     continue;
                 }
-                if (roomMap.TryGetValue(asset.RoomKey, out string room))
+                if (roomMap.TryGetValue(asset.RoomKey, out string? room))
                 {
                     asset.Room = room;
                 }
@@ -234,8 +234,11 @@ namespace TandemSDK
 
                     var roomElement = roomElements.Items.SingleOrDefault(i => string.Equals(i.Key, roomElementId));
 
-                    asset.Room = roomElement.Name;
-                    roomMap[asset.RoomKey] = asset.Room;
+                    if (roomElement != null)
+                    {
+                        asset.Room = roomElement.Name;
+                        roomMap[asset.RoomKey] = asset.Room;
+                    }
                 }
             }
             return result.ToArray();
@@ -278,15 +281,19 @@ namespace TandemSDK
 
             for (int i = 0; i < items.Length; i++)
             {
-                var item = items[i];
+                var item = Convert.ToString(items[i]);
 
+                if (string.IsNullOrEmpty(item))
+                {
+                    continue;
+                }
                 if (i == 0)
                 {
-                    result.Version = item.ToString();
+                    result.Version = item;
                 }
                 else
                 {
-                    var items2 = JsonConvert.DeserializeObject<Dictionary<string, string>>(item.ToString());
+                    var items2 = JsonConvert.DeserializeObject<Dictionary<string, string>>(item);
                     var modelElement = new ScanResponse.Item();
 
                     foreach (var el in items2)
