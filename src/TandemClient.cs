@@ -25,6 +25,20 @@ namespace TandemSDK
             return result;
         }
 
+        public async Task<IEnumerable<Asset>> GetFacilityAssetsAsync(string facilityId)
+        {
+            var facility = await GetFacilityAsync(facilityId);
+            var result = new List<Asset>();
+
+            foreach (var link in facility.Links)
+            {
+                var assets = await GetTaggedAssetsAsync(link.ModelId);
+
+                result.AddRange(assets);
+            }
+            return result;
+        }
+
         public async Task<FacilityClassification> GetFacilityClassificationAsync(string facilityId)
         {
             var token = _getToken();
@@ -175,6 +189,7 @@ namespace TandemSDK
                 {
                     var newAsset = new Asset
                     {
+                        ModelId = modelId,
                         Key = item.Key,
                         Name = item.Name,
                         AssetProperties = userProps
