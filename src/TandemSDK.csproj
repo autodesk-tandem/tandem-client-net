@@ -15,7 +15,30 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Remove="Resources\cat_id_to_name.json" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Include="D:\Dev\tandem\tests\tandem-sdk-net\src\.editorconfig" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Resources\cat_id_to_name.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Resources.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
   </ItemGroup>
 
 </Project>

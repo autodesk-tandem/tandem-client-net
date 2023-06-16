@@ -192,6 +192,7 @@ namespace TandemSDK
                         ModelId = modelId,
                         Key = item.Key,
                         Name = item.Name,
+                        Category = item.Category,
                         AssetProperties = userProps
                     };
                     var levelKey = string.IsNullOrEmpty(levelOverride) ? level : levelOverride;
@@ -289,58 +290,6 @@ namespace TandemSDK
             return result;
         }
 
-        private static ScanResponse DeserializeScanResponse(object[] items)
-        {
-            var result = new ScanResponse();
-            var modelElements = new List<ScanResponse.Item>();
-
-            for (int i = 0; i < items.Length; i++)
-            {
-                var item = Convert.ToString(items[i]);
-
-                if (string.IsNullOrEmpty(item))
-                {
-                    continue;
-                }
-                if (i == 0)
-                {
-                    result.Version = item;
-                }
-                else
-                {
-                    var items2 = JsonConvert.DeserializeObject<Dictionary<string, string>>(item);
-                    var modelElement = new ScanResponse.Item();
-
-                    foreach (var el in items2)
-                    {
-                        if (string.Equals(el.Key, "k"))
-                        {
-                            modelElement.Key = items2["k"];
-                        }
-                        else if (string.Equals(el.Key, QualifiedColumns.ElementFlags))
-                        {
-                            modelElement.Flags = Convert.ToInt64(el.Value);
-                        }
-                        else if (string.Equals(el.Key, QualifiedColumns.CategoryId))
-                        {
-                            modelElement.CategoryId = Convert.ToInt64(el.Value);
-                        }
-                        else if (string.Equals(el.Key, QualifiedColumns.Name))
-                        {
-                            modelElement.Name = el.Value;
-                        }
-                        else
-                        {
-                            modelElement.Properties.Add(el.Key, el.Value);
-                        }
-                    }
-                    modelElements.Add(modelElement);
-                }
-            }
-            result.Items = modelElements.ToArray();
-            return result;
-        }
-
         private async Task<T> GetAsync<T>(string token, string endPoint)
         {
             var req = new HttpRequestMessage(HttpMethod.Get, endPoint);
@@ -368,6 +317,78 @@ namespace TandemSDK
             using var jsonReader = new JsonTextReader(streamReader);
             var serializer = new JsonSerializer();
             var result = serializer.Deserialize<T>(jsonReader);
+
+            return result;
+        }
+
+        private static ScanResponse DeserializeScanResponse(object[] items)
+        {
+            var result = new ScanResponse();
+            var modelElements = new List<ScanResponse.Item>();
+            var revitCategories = GetRevitCategories();
+
+            for (int i = 0; i < items.Length; i++)
+            {
+                var item = Convert.ToString(items[i]);
+
+                if (string.IsNullOrEmpty(item))
+                {
+                    continue;
+                }
+                if (i == 0)
+                {
+                    result.Version = item;
+                }
+                else
+                {
+                    var items2 = JsonConvert.DeserializeObject<Dictionary<string, string>>(item);
+
+                    if (items2 != null)
+                    {
+                        var modelElement = new ScanResponse.Item();
+
+                        foreach (var el in items2)
+                        {
+                            if (string.Equals(el.Key, "k"))
+                            {
+                                modelElement.Key = items2["k"];
+                            }
+                            else if (string.Equals(el.Key, QualifiedColumns.ElementFlags))
+                            {
+                                modelElement.Flags = Convert.ToInt64(el.Value);
+                            }
+                            else if (string.Equals(el.Key, QualifiedColumns.CategoryId))
+                            {
+                                modelElement.CategoryId = Convert.ToInt64(el.Value);
+                                var id = Convert.ToString(-modelElement.CategoryId - 2000000);
+
+                                if (revitCategories.TryGetValue(id, out string? category))
+                                {
+                                    modelElement.Category = category;
+                                }
+                            }
+                            else if (string.Equals(el.Key, QualifiedColumns.Name))
+                            {
+                                modelElement.Name = el.Value;
+                            }
+                            else
+                            {
+                                modelElement.Properties.Add(el.Key, el.Value);
+                            }
+                        }
+                        modelElements.Add(modelElement);
+                    }
+                }
+            }
+            result.Items = modelElements.ToArray();
+            return result;
+        }
+
+        private static IDictionary<string, string> GetRevitCategories()
+        {
+            string categories = System.Text.Encoding.Default.GetString(Resources.cat_id_to_name);
+
+            var result = JsonConvert.DeserializeObject<Dictionary<string, string>>(categories);
 
             return result;
         }
