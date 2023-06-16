@@ -47,6 +47,20 @@ namespace TandemSDK
             return result;
         }
 
+        public async Task<IEnumerable<Room>> GetFacilityRoomsAsync(string facilityId)
+        {
+            var facility = await GetFacilityAsync(facilityId);
+            var result = new List<Room>();
+
+            foreach (var link in facility.Links)
+            {
+                var rooms = await GetRoomsAsync(link.ModelId);
+
+                result.AddRange(rooms);
+            }
+            return result;
+        }
+
         public async Task<IDictionary<string, Facility>> GetGroupFacilitiesAsync(string groupId)
         {
             var token = _getToken();
@@ -95,22 +109,25 @@ namespace TandemSDK
 
             foreach (var item in response.Items)
             {
+                if (item.Flags != ElementFlags.Room)
+                {
+                    continue;
+                }
                 var room = new Room
                 {
                     Key = item.Key,
-                    Name = item.Name
+                    Name = item.Name,
+                    ModelId = modelId,
+                    Category = item.Category,
                 };
 
-                if (item.Flags == ElementFlags.Room)
+                if ((levelAttr != null) && item.Properties.TryGetValue(levelAttr.Id, out string? level))
                 {
-                    if ((levelAttr != null) && item.Properties.TryGetValue(levelAttr.Id, out string? level))
-                    {
-                        var levelKey = Utils.Encoding.FromShortKey(level, ElementFlags.FamilyType);
+                    var levelKey = Utils.Encoding.FromShortKey(level, ElementFlags.FamilyType);
 
-                        room.LevelKey = levelKey;
-                    }
-                    result.Add(room);
+                    room.LevelKey = levelKey;
                 }
+                result.Add(room);
             }
             // get level details
             foreach (var room in result)
