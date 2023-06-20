@@ -28,7 +28,7 @@ namespace TandemSDK.Utils
         
         public static string FromShortKey(string shortKey, long? flags)
         {
-            var buff = Decode(shortKey, kElementIdWithFlagsSize, 4);
+            var buff = Decode(shortKey, 4);
             
             if (flags.HasValue)
             {
@@ -42,27 +42,76 @@ namespace TandemSDK.Utils
             return MakeWebSafe(result);
         }
 
-        public static (string, string) FromXrefKey(string key)
+        public static string[] FromShortKeyArray(string key)
         {
-            var buff = Decode(key, kModelIdSize + kElementIdWithFlagsSize);
-            var modelBuff = new byte[kModelIdSize];
+            var buff = Decode(key);
+            int offset = 0;
+            var elementKeys = new List<string>();
 
-            Buffer.BlockCopy(buff, 0, modelBuff, 0, 16);
-            string modelKey = MakeWebSafe(Convert.ToBase64String(modelBuff));
-            var elementBuff = new byte[kElementIdWithFlagsSize];
+            while (offset < buff.Length)
+            {
+                var size = buff.Length - offset;
 
-            Buffer.BlockCopy(buff, 16, elementBuff, 0, kElementIdWithFlagsSize);
-            string elementKey = MakeWebSafe(Convert.ToBase64String(elementBuff));
+                if (size < kElementIdSize)
+                {
+                    break;
+                }
+                var elementBuff = new byte[kElementIdWithFlagsSize];
 
-            return (modelKey, elementKey);
+                Buffer.BlockCopy(buff, offset, elementBuff, kElementFlagsSize, kElementIdSize);
+                string elementKey = MakeWebSafe(Convert.ToBase64String(elementBuff));
+
+                elementKeys.Add(elementKey);
+                offset += kElementIdSize;
+            }
+            return (elementKeys.ToArray());
         }
 
-        private static byte[] Decode(string text, int size = kElementIdWithFlagsSize, int start = 0)
+        public static (string[], string[]) FromXrefKey(string key)
+        {
+            var buff = Decode(key);
+            int offset = 0;
+            var modelKeys = new List<string>();
+            var elementKeys = new List<string>();
+
+            while (offset < buff.Length)
+            {
+                var size = buff.Length - offset;
+
+                if (size < (kModelIdSize + kElementIdWithFlagsSize))
+                {
+                    break;
+                }
+                var modelBuff = new byte[kModelIdSize];
+
+                Buffer.BlockCopy(buff, offset, modelBuff, 0, 16);
+                string modelKey = MakeWebSafe(Convert.ToBase64String(modelBuff));
+
+                modelKeys.Add(modelKey);
+                var elementBuff = new byte[kElementIdWithFlagsSize];
+
+                Buffer.BlockCopy(buff, offset + kModelIdSize, elementBuff, 0, kElementIdWithFlagsSize);
+                string elementKey = MakeWebSafe(Convert.ToBase64String(elementBuff));
+
+                elementKeys.Add(elementKey);
+                offset += (kModelIdSize + kElementIdWithFlagsSize);
+            }
+            return (modelKeys.ToArray(), elementKeys.ToArray());
+        }
+
+        private static byte[] Decode(string text, int start = 0)
         {
             var len = text.Length;
             var outputLen = Base64DecodedLength(len);
-            var buff = new byte[size];
+            var buff = new List<byte>();
 
+            if (start > 0)
+            {
+                while (buff.Count < start)
+                {
+                    buff.Add(0);
+                }
+            }
             for (int nMod3, nMod4, nUInt24 = 0, nOutIdx = 0, nInIdx = 0; nInIdx < len; nInIdx++)
             {
                 nMod4 = nInIdx & 3;
@@ -71,12 +120,12 @@ namespace TandemSDK.Utils
                 {
                     for (nMod3 = 0; nMod3 < 3 && nOutIdx < outputLen; nMod3++, nOutIdx++)
                     {
-                        buff[start + nOutIdx] = (byte)(int)((uint)nUInt24 >> ((int)((uint)16 >> nMod3 & 24)) & 255);
+                        buff.Insert(start + nOutIdx, (byte)(int)((uint)nUInt24 >> ((int)((uint)16 >> nMod3 & 24)) & 255));
                     }
                     nUInt24 = 0;
                 }
             }
-            return buff;
+            return buff.ToArray();
         }
 
         private static int B64ToUInt6Gen(int nChr)
