@@ -1,15 +1,14 @@
 ﻿namespace TandemSDK.Models
 {
-    public class Asset
+    public class Asset : ElementBase, IWithRooms
     {
-        public string Key { get; set; }
-        public string ModelId { get; set; }
-        public string Name { get; set; }
-        public string? Category { get; set; }
-        public string? Level { get; set; }
-        public string? LevelKey { get; set; }
-        public string? Room { get; set; }
-        public string? RoomKey { get; set; }
+        public Asset(ElementBase element)
+        : base(element)
+        {
+            Rooms = new List<RoomRef>();
+        }
+
+        public List<RoomRef> Rooms { get; set; }
         public string? SystemClass { get; set; }
 
         public IDictionary<string, string> AssetProperties { get; set; }

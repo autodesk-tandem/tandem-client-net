@@ -42,5 +42,11 @@
         public const string ElementFlags = "n:a";
         public const string CategoryId   = "n:c";
         public const string Name         = "n:n";
+        public const string Level        = "l:l";
+    }
+
+    public static class Prefixes
+    {
+        public const string Model = "urn:adsk.dtm:";
     }
 }
