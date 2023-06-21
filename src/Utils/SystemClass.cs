@@ -2,7 +2,7 @@
 {
     internal class SystemClass
     {
-        private static string[] SystemClassNames =
+        private readonly static string[] SystemClassNames =
         {
             "Supply Air", //0
 	        "Return Air", //1

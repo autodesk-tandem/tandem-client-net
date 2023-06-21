@@ -2,6 +2,7 @@
 using System.Diagnostics;
 
 using TandemSDK.Models;
+using TandemSDK.Utils;
 
 namespace TandemSDK
 {
@@ -103,6 +104,11 @@ namespace TandemSDK
             for (var i = 0; i < count; i++)
             {
                 var item = response?.Items[i];
+
+                if (item == null)
+                {
+                    continue;
+                }
                 var room = string.Empty;
                 var xroom = string.Empty;
 
@@ -176,6 +182,10 @@ namespace TandemSDK
                     }
                     var levelDetails = response?.Items[levelIndex];
 
+                    if (levelDetails == null)
+                    {
+                        continue;
+                    }
                     item.Level = levelDetails.Name;
                 }
             }
@@ -235,30 +245,16 @@ namespace TandemSDK
         public async Task<Asset[]> GetTaggedAssetsAsync(string modelId)
         {
             var schema = await GetModelSchemaAsync(modelId);
-            var response = await ScanAsync(modelId,
-                new string[]
-                {
-                    ColumnFamilies.Standard,
-                    ColumnFamilies.DtProperties,
-                    ColumnFamilies.Refs,
-                    ColumnFamilies.Xrefs
-                });
-            var systemClassAttr = schema.Attributes.SingleOrDefault(a => string.Equals(a.Fam, ColumnFamilies.Standard) && string.Equals(a.Col, ColumnNames.SystemClass));
-            var systemClassOverrideAttr = schema.Attributes.SingleOrDefault(a => string.Equals(a.Fam, ColumnFamilies.Standard) && string.Equals(a.Col, ColumnNames.SystemClassOverride));
-            var roomAttr = schema.Attributes.SingleOrDefault(a => string.Equals(a.Fam, ColumnFamilies.Refs) && string.Equals(a.Col, ColumnNames.Rooms));
-            var xroomAttr = schema.Attributes.SingleOrDefault(a => string.Equals(a.Fam, ColumnFamilies.Xrefs) && string.Equals(a.Col, ColumnNames.Rooms));
+            var elements = await GetElementsAsync(modelId);
             var result = new List<Asset>();
-            var shortModelId = modelId.Replace(Prefixes.Model, string.Empty);
 
-            foreach (var item in response.Items)
+            foreach (var element in elements)
             {
                 var userProps = new Dictionary<string, string>();
-                string room = string.Empty;
-                string xroom = string.Empty;
-                int systemClass = int.MinValue;
-                int systemClassOverride = int.MinValue;
+                int? systemClass = null;
+                int? systemClassOverride = null;
 
-                foreach (var prop in item.Properties)
+                foreach (var prop in element.Properties)
                 {
                     var propDef = schema.Attributes.SingleOrDefault(a => string.Equals(a.Id, prop.Key));
 
@@ -270,65 +266,37 @@ namespace TandemSDK
                     {
                         userProps[propDef.Id] = prop.Value;
                     }
-                    if (string.Equals(propDef.Id, systemClassAttr?.Id))
+                    if (string.Equals(prop.Key, QualifiedColumns.SystemClass))
                     {
                         systemClass = Convert.ToInt32(prop.Value);
                     }
-                    if (string.Equals(propDef.Id, systemClassOverrideAttr?.Id))
+                    if (string.Equals(prop.Key, QualifiedColumns.SystemClassOverride))
                     {
                         systemClassOverride = Convert.ToInt32(prop.Value);
-                    }
-                    if (string.Equals(propDef.Id, roomAttr?.Id))
-                    {
-                        room = prop.Value;
-                    }
-                    if (string.Equals(propDef.Id, xroomAttr?.Id))
-                    {
-                        xroom = prop.Value;
                     }
                 }
                 if (userProps.Count > 0)
                 {
-                    var newAsset = new Asset(item)
+                    var asset = new Asset(element)
                     {
-                        ModelId = shortModelId,
                         AssetProperties = userProps
                     };
-                    var systemClassFlags = systemClassOverride == int.MinValue ? systemClass : systemClassOverride;
 
-                    if (systemClassFlags != int.MinValue)
-                    {
-                        newAsset.SystemClass = Utils.SystemClass.ToString(systemClassFlags);
-                    }
-                    // room
-                    if (!string.IsNullOrEmpty(room))
-                    {
-                        //newAsset.RoomKey = room;
-                    }
-                    if (!string.IsNullOrEmpty(xroom))
-                    {
-                        var (roomModelIds, roomElementKeys) = Utils.Encoding.FromXrefKey(xroom);
+                    int? systemClassValue = null;
 
-                        for (var i = 0; i < roomModelIds.Length; i++)
-                        {
-                            newAsset.Rooms.Add(new RoomRef
-                            {
-                                ModelId = roomModelIds[i],
-                                Key = roomElementKeys[i]
-                            });
-                        }
+                    if (systemClass.HasValue)
+                    {
+                        systemClassValue = systemClass.Value;
                     }
-                    result.Add(newAsset);
-                }
-            }
-            // add levels
-            foreach (var asset in result)
-            {
-                var levelDetails = response.Items.SingleOrDefault(i => string.Equals(i.Key, asset.LevelKey));
-
-                if ((levelDetails != null) && ((levelDetails.Flags & ElementFlags.Level) == ElementFlags.Level))
-                {
-                    asset.Level = levelDetails.Name;
+                    if (systemClassOverride.HasValue)
+                    {
+                        systemClassValue = systemClassOverride.Value;
+                    }
+                    if (systemClassValue.HasValue)
+                    {
+                        asset.SystemClass = SystemClass.ToString(systemClassValue.Value);
+                    }
+                    result.Add(asset);
                 }
             }
             return result.ToArray();
@@ -381,6 +349,11 @@ namespace TandemSDK
                 {
                     var modelId = room.ModelId;
                     var elementKey = room.Key;
+
+                    if (string.IsNullOrEmpty(modelId) || string.IsNullOrEmpty(elementKey))
+                    {
+                        continue;
+                    }
                     var index = roomElementKeys.IndexOf(elementKey);
 
                     if (index > -1)
@@ -472,27 +445,29 @@ namespace TandemSDK
             var req = new HttpRequestMessage(HttpMethod.Get, endPoint);
 
             req.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
-            var response = await _client.SendAsync(req);
-            var stream = await response.Content.ReadAsStreamAsync();
-            using var streamReader = new StreamReader(stream);
-            using var jsonReader = new JsonTextReader(streamReader);
-            var serializer = new JsonSerializer();
-            var result = serializer.Deserialize<T>(jsonReader);
+            T result = await SendAsync<T>(req);
 
             return result;
         }
 
-        private async Task<T?> PostAsync<T>(string token, string endPoint, object data)
+        private async Task<T> PostAsync<T>(string token, string endPoint, object data)
         {
             var req = new HttpRequestMessage(HttpMethod.Post, endPoint);
 
             req.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
             req.Content = new StringContent(JsonConvert.SerializeObject(data), System.Text.Encoding.UTF8, "application/json");
-            var response = await _client.SendAsync(req);
+            T result = await SendAsync<T>(req);
+
+            return result;
+        }
+
+        private async Task<T> SendAsync<T>(HttpRequestMessage request)
+        {
+            var response = await _client.SendAsync(request);
 
             if (!response.IsSuccessStatusCode)
             {
-                return default;
+                throw new HttpRequestException($"{response.StatusCode}");
             }
             var stream = await response.Content.ReadAsStreamAsync();
             using var streamReader = new StreamReader(stream);
@@ -544,7 +519,7 @@ namespace TandemSDK
                                 modelElement.CategoryId = Convert.ToInt64(el.Value);
                                 var id = Convert.ToString(-modelElement.CategoryId - 2000000);
 
-                                if (revitCategories.TryGetValue(id, out string? category))
+                                if (!string.IsNullOrEmpty(id) && revitCategories.TryGetValue(id, out string? category))
                                 {
                                     modelElement.Category = category;
                                 }
