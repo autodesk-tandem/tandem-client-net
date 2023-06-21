@@ -43,6 +43,7 @@
                     names.Add(SystemClassNames[i]);
                 }
             }
+            names.Sort();
 			return names.ToArray();
         }
 
