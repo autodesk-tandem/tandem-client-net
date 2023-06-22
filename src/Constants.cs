@@ -43,16 +43,19 @@
 
     public static class QualifiedColumns
     {
-        public const string ElementFlags           = "n:a";
-        public const string CategoryId             = "n:c";
-        public const string Name                   = "n:n";
-        public const string SystemClass            = "n:b";
-        public const string SystemClassOverride    = "n:!b";
-        public const string Classification         = "n:v";
-        public const string ClassificationOverride = "n:!v";
-        public const string Level                  = "l:l";
-        public const string Room                   = "l:r";
-        public const string XRoom                  = "x:r";
+        public const string ElementFlags           = $"{ColumnFamilies.Standard}:{ColumnNames.ElementFlags}";
+        public const string CategoryId             = $"{ColumnFamilies.Standard}:{ColumnNames.CategoryId}";
+        public const string Name                   = $"{ColumnFamilies.Standard}:{ColumnNames.Name}";
+        public const string SystemClass            = $"{ColumnFamilies.Standard}:{ColumnNames.SystemClass}";
+        public const string SystemClassOverride    = $"{ColumnFamilies.Standard}:{ColumnNames.SystemClassOverride}";
+        public const string Classification         = $"{ColumnFamilies.Standard}:{ColumnNames.Classification}";
+        public const string ClassificationOverride = $"{ColumnFamilies.Standard}:{ColumnNames.ClassificationOverride}";
+        public const string UniformatClass         = $"{ColumnFamilies.Standard}:{ColumnNames.UniformatClass}";
+        public const string UniformatClassOverride = $"{ColumnFamilies.Standard}:{ColumnNames.UniformatClassOverride}";
+        public const string Level                  = $"{ColumnFamilies.Refs}:{ColumnNames.Level}";
+        public const string LevelOverride          = $"{ColumnFamilies.Refs}:{ColumnNames.LevelOverride}";
+        public const string Room                   = $"{ColumnFamilies.Refs}:{ColumnNames.Rooms}";
+        public const string XRoom                  = $"{ColumnFamilies.Xrefs}:{ColumnNames.Rooms}";
     }
 
     public static class Prefixes
