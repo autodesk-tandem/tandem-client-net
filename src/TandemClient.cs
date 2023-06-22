@@ -94,8 +94,6 @@ namespace TandemSDK
                     ColumnFamilies.Refs,
                     ColumnFamilies.Xrefs
                 });
-            var xroomAttr = schema.Attributes.SingleOrDefault(a => string.Equals(a.Fam, ColumnFamilies.Xrefs) && string.Equals(a.Col, ColumnNames.Rooms));
-            var roomAttr = schema.Attributes.SingleOrDefault(a => string.Equals(a.Fam, ColumnFamilies.Refs) && string.Equals(a.Col, ColumnNames.Rooms));
             var result = new List<Element>();
             var levelMap = new Dictionary<string, int>();
             var count = response?.Items.Length;
@@ -120,11 +118,11 @@ namespace TandemSDK
                     {
                         continue;
                     }
-                    if (string.Equals(propDef.Id, xroomAttr?.Id))
+                    if (string.Equals(propDef.Id, QualifiedColumns.XRoom))
                     {
                         xroom = prop.Value;
                     }
-                    if (string.Equals(propDef.Id, roomAttr?.Id))
+                    if (string.Equals(propDef.Id, QualifiedColumns.Room))
                     {
                         room = prop.Value;
                     }
