@@ -20,16 +20,18 @@
 
     public static class ColumnNames
     {
-        public const string ElementFlags           = "a";
         public const string CategoryId             = "c";
         public const string Classification         = "v";
         public const string ClassificationOverride = "!v";
+        public const string ElementFlags           = "a";
         public const string Name                   = "n";
         public const string Level                  = "l";
         public const string LevelOverride          = "!l";
+        public const string Rooms                  = "r";
         public const string SystemClass            = "b";
         public const string SystemClassOverride    = "!b";
-        public const string Rooms                  = "r";
+        public const string UniformatClass         = "u";
+        public const string UniformatClassOverride = "!u";
     }
 
     public static class ElementFlags
