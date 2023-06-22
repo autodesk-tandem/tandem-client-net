@@ -116,6 +116,8 @@ namespace TandemSDK
                 }
                 var room = string.Empty;
                 var xroom = string.Empty;
+                var assemblyCode = string.Empty;
+                var assemblyCodeOverride = string.Empty;
                 var classification = string.Empty;
                 var classificationOverride = string.Empty;
 
@@ -143,6 +145,14 @@ namespace TandemSDK
                     {
                         classificationOverride = prop.Value;
                     }
+                    if (string.Equals(propDef.Id, QualifiedColumns.UniformatClass))
+                    {
+                        assemblyCode = prop.Value;
+                    }
+                    if (string.Equals(propDef.Id, QualifiedColumns.UniformatClassOverride))
+                    {
+                        assemblyCodeOverride = prop.Value;
+                    }
                 }
                 // store index of the level
                 if ((item.Flags & ElementFlags.Level) == ElementFlags.Level)
@@ -154,6 +164,21 @@ namespace TandemSDK
                     ModelId = shortModelId
                 };
 
+                if (!string.IsNullOrEmpty(assemblyCode))
+                {
+                    element.UniformatClassId = assemblyCode;
+                }
+                if (!string.IsNullOrEmpty(assemblyCodeOverride))
+                {
+                    element.UniformatClassId = assemblyCodeOverride;
+                }
+                // resolve assembly code
+                if (!string.IsNullOrEmpty(element.UniformatClassId))
+                {
+                    var code = AssemblyCode.UniformatToAssemblyCode(element.UniformatClassId);
+
+                    element.AssemblyCode = code;
+                }
                 if (!string.IsNullOrEmpty(classification))
                 {
                     element.ClassificationId = classification;

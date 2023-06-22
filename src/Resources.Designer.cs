@@ -61,6 +61,26 @@ namespace TandemSDK {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to ASSEMBLY CODE,DESCRIPTION,LEVEL,REVIT CATEGORY,UNIFORMAT 2010,MASTERFORMAT,NOTES
+        ///A,Substructure,1,,A,,
+        ///A10,Foundations,2,,A10,,
+        ///A1010,Standard Foundations,3,,A1010,,
+        ///A1010100,Footings &amp; Pile Caps,4,-2001300,,,
+        ///A1010110,Strip Footings,5,-2001300,,,
+        ///A1010120,Spread Footings,5,-2001300,,,
+        ///A1010130,Pile Caps,5,-2001300,A1020.70,,?
+        ///A1010200,Foundation Walls,4,-2000011,A1010.10,,
+        ///A1010210,Foundation Walls - CIP,5,-2000011,A1010.10,,
+        ///A1010220,Foundation Walls - CMU,5,-2000011,A1010.10,,
+        ///A1010230,Foundat [rest of string was truncated]&quot;;.
+        /// </summary>
+        internal static string AssemblyCodeToUniformat {
+            get {
+                return ResourceManager.GetString("AssemblyCodeToUniformat", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized resource of type System.Byte[].
         /// </summary>
         internal static byte[] cat_id_to_name {
