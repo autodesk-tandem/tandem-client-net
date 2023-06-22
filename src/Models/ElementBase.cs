@@ -1,6 +1,6 @@
 ﻿namespace TandemSDK.Models
 {
-    public class ElementBase
+    public class ElementBase : IWithClassification
     {
         public ElementBase()
         {
@@ -16,6 +16,8 @@
             Name = element.Name;
             Category = element.Category;
             CategoryId = element.CategoryId;
+            Classification = element.Classification;
+            ClassificationId = element.ClassificationId;
             Level = element.Level;
             LevelKey = element.LevelKey;
             Properties = new Dictionary<string, string>();
@@ -31,6 +33,8 @@
         public string Name { get; set; }
         public long? CategoryId { get; set; }
         public string? Category { get; set; }
+        public string? ClassificationId { get; set; }
+        public string? Classification { get; set; }
         public string? Level { get; set; }
         public string? LevelKey { get; set; }
 

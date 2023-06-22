@@ -6,4 +6,10 @@
         public string Name { get; set; }
         public string[][] Rows { get; set; }
     }
+
+    public interface IWithClassification
+    {
+        string ClassificationId { get; }
+        string Classification { get; set; }
+    }
 }

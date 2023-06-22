@@ -31,6 +31,7 @@ namespace TandemSDK
         public async Task<IEnumerable<Asset>> GetFacilityAssetsAsync(string facilityId)
         {
             var facility = await GetFacilityAsync(facilityId);
+            var classification = await GetFacilityClassificationAsync(facilityId);
             var result = new List<Asset>();
 
             foreach (var link in facility.Links)
@@ -39,7 +40,8 @@ namespace TandemSDK
 
                 result.AddRange(assets);
             }
-            // resolve room names
+            // resolve  names
+            AssignClassificationName(classification, result);
             await AssignRoomNames(result);
             return result;
         }
@@ -55,6 +57,7 @@ namespace TandemSDK
         public async Task<IEnumerable<Element>> GetFacilityElementsAsync(string facilityId)
         {
             var facility = await GetFacilityAsync(facilityId);
+            var classification = await GetFacilityClassificationAsync(facilityId);
             var result = new List<Element>();
 
             foreach (var link in facility.Links)
@@ -63,7 +66,8 @@ namespace TandemSDK
 
                 result.AddRange(elements);
             }
-            // resolve room names
+            // resolve names
+            AssignClassificationName(classification, result);
             await AssignRoomNames(result);
             return result;
         }
@@ -71,6 +75,7 @@ namespace TandemSDK
         public async Task<IEnumerable<Room>> GetFacilityRoomsAsync(string facilityId)
         {
             var facility = await GetFacilityAsync(facilityId);
+            var classification = await GetFacilityClassificationAsync(facilityId);
             var result = new List<Room>();
 
             foreach (var link in facility.Links)
@@ -79,6 +84,8 @@ namespace TandemSDK
 
                 result.AddRange(rooms);
             }
+            // resolve names
+            AssignClassificationName(classification, result);
             return result;
         }
 
@@ -109,6 +116,8 @@ namespace TandemSDK
                 }
                 var room = string.Empty;
                 var xroom = string.Empty;
+                var classification = string.Empty;
+                var classificationOverride = string.Empty;
 
                 foreach (var prop in item.Properties)
                 {
@@ -126,6 +135,14 @@ namespace TandemSDK
                     {
                         room = prop.Value;
                     }
+                    if (string.Equals(propDef.Id, QualifiedColumns.Classification))
+                    {
+                        classification = prop.Value;
+                    }
+                    if (string.Equals(propDef.Id, QualifiedColumns.ClassificationOverride))
+                    {
+                        classificationOverride = prop.Value;
+                    }
                 }
                 // store index of the level
                 if ((item.Flags & ElementFlags.Level) == ElementFlags.Level)
@@ -137,6 +154,14 @@ namespace TandemSDK
                     ModelId = shortModelId
                 };
 
+                if (!string.IsNullOrEmpty(classification))
+                {
+                    element.ClassificationId = classification;
+                }
+                if (!string.IsNullOrEmpty(classificationOverride))
+                {
+                    element.ClassificationId = classificationOverride;
+                }
                 if (!string.IsNullOrEmpty(room))
                 {
                     var roomElementKeys = Encoding.FromShortKeyArray(room);
@@ -332,6 +357,33 @@ namespace TandemSDK
             var result = DeserializeScanResponse(items);
 
             return result;
+        }
+
+        private void AssignClassificationName<T>(FacilityClassification classification, IEnumerable<T> items ) where T : IWithClassification
+        {
+            var classificationMap = new Dictionary<string, string>();
+
+            foreach (var item in items)
+            {
+                if (string.IsNullOrEmpty(item.ClassificationId))
+                {
+                    continue;
+                }
+                if (classificationMap.TryGetValue(item.ClassificationId, out string? name))
+                {
+                    item.Classification = name;
+                    continue;
+                }
+                var row = classification.Rows.SingleOrDefault(r => string.Equals(r[0], item.ClassificationId));
+
+                if ((row == null) || (row.Length < 2))
+                {
+                    continue;
+                }
+                name = row[1];
+                item.Classification = name;
+                classificationMap[item.ClassificationId] = name;
+;            }
         }
 
         private async Task AssignRoomNames<T>(IEnumerable<T> items) where T : IWithRooms
