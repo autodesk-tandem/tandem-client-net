@@ -139,7 +139,7 @@ namespace TandemSDK
 
                 if (!string.IsNullOrEmpty(room))
                 {
-                    var roomElementKeys = Utils.Encoding.FromShortKeyArray(room);
+                    var roomElementKeys = Encoding.FromShortKeyArray(room);
 
                     for (var j = 0; j < roomElementKeys.Length; j++)
                     {
@@ -152,7 +152,7 @@ namespace TandemSDK
                 }
                 if (!string.IsNullOrEmpty(xroom))
                 {
-                    var (roomModelIds, roomElementKeys) = Utils.Encoding.FromXrefKey(xroom);
+                    var (roomModelIds, roomElementKeys) = Encoding.FromXrefKey(xroom);
 
                     for (var j = 0; j < roomModelIds.Length; j++)
                     {
