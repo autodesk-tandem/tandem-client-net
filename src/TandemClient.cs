@@ -89,6 +89,23 @@ namespace TandemSDK
             return result;
         }
 
+        public async Task<IEnumerable<Models.Stream>> GetFacilityStreamsAsync(string facilityId)
+        {
+            var model = await GetDefaultModelAsync(facilityId);
+            var result = new List<Models.Stream>();
+
+            if (model != null)
+            {
+                var streams = await GetStreamsAsync(model.ModelId);
+
+                foreach (var stream in streams)
+                {
+                    result.Add(stream);
+                }
+            }
+            await AssignRoomNames(result);
+            return result;
+        }
 
         public async Task<Element[]> GetElementsAsync(string modelId)
         {
@@ -290,6 +307,22 @@ namespace TandemSDK
             return result.ToArray();
         }
 
+        public async Task<Models.Stream[]> GetStreamsAsync(string modelId)
+        {
+            var items = await GetElementsAsync(modelId);
+            var result = new List<Models.Stream>();
+
+            foreach (var item in items)
+            {
+                if ((item.Flags & ElementFlags.Stream) != ElementFlags.Stream)
+                {
+                    continue;
+                }
+                result.Add(new Models.Stream(item));
+            }
+            return result.ToArray();
+        }
+
         public async Task<Asset[]> GetTaggedAssetsAsync(string modelId)
         {
             var schema = await GetModelSchemaAsync(modelId);
@@ -456,6 +489,23 @@ namespace TandemSDK
                     room.Name = name;
                 }
             }
+        }
+
+        private async Task<Facility.Link?> GetDefaultModelAsync(string facilityId)
+        {
+            var facility = await GetFacilityAsync(facilityId);
+            var shortFacilityId = facilityId.Replace(Prefixes.Facility, string.Empty);
+
+            foreach (var link in facility.Links)
+            {
+                var shortModelId = link.ModelId.Replace(Prefixes.Model, string.Empty);
+
+                if (string.Equals(shortFacilityId, shortModelId))
+                {
+                    return link;
+                }
+            }
+            return null;
         }
 
         private async Task<string[]> GetRoomNames(string[] modelIds, string[] elementKeys)

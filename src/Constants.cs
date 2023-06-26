@@ -41,6 +41,7 @@
         public const long Room       = 0x00000005;
         public const long FamilyType = 0x01000000;
         public const long Level      = 0x01000001;
+        public const long Stream     = 0x01000003;
     }
 
     public static class QualifiedColumns
@@ -63,6 +64,7 @@
 
     public static class Prefixes
     {
+        public const string Facility = "urn:adsk.dtt:";
         public const string Model = "urn:adsk.dtm:";
     }
 }
