@@ -20,6 +20,7 @@
 
     public static class ColumnNames
     {
+        public const string Key                    = "k";
         public const string CategoryId             = "c";
         public const string Classification         = "v";
         public const string ClassificationOverride = "!v";

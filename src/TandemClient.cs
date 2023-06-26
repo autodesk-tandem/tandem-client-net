@@ -581,9 +581,9 @@ namespace TandemSDK
 
                         foreach (var el in items2)
                         {
-                            if (string.Equals(el.Key, "k"))
+                            if (string.Equals(el.Key, ColumnNames.Key))
                             {
-                                modelElement.Key = items2["k"];
+                                modelElement.Key = items2[ColumnNames.Key];
                             }
                             else if (string.Equals(el.Key, QualifiedColumns.ElementFlags))
                             {
