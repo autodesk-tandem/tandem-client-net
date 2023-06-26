@@ -605,7 +605,7 @@ namespace TandemSDK
                             }
                             else if (string.Equals(el.Key, QualifiedColumns.Level))
                             {
-                                modelElement.LevelKey = Utils.Encoding.FromShortKey(el.Value, ElementFlags.FamilyType);
+                                modelElement.LevelKey = Encoding.FromShortKey(el.Value, ElementFlags.FamilyType);
                             }
                             else
                             {
