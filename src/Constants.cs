@@ -26,6 +26,7 @@
         public const string ClassificationOverride = "!v";
         public const string ElementFlags           = "a";
         public const string Name                   = "n";
+        public const string NameOverride           = "!n";
         public const string Level                  = "l";
         public const string LevelOverride          = "!l";
         public const string Rooms                  = "r";
@@ -47,6 +48,7 @@
         public const string ElementFlags           = $"{ColumnFamilies.Standard}:{ColumnNames.ElementFlags}";
         public const string CategoryId             = $"{ColumnFamilies.Standard}:{ColumnNames.CategoryId}";
         public const string Name                   = $"{ColumnFamilies.Standard}:{ColumnNames.Name}";
+        public const string NameOverride           = $"{ColumnFamilies.Standard}:{ColumnNames.NameOverride}";
         public const string SystemClass            = $"{ColumnFamilies.Standard}:{ColumnNames.SystemClass}";
         public const string SystemClassOverride    = $"{ColumnFamilies.Standard}:{ColumnNames.SystemClassOverride}";
         public const string Classification         = $"{ColumnFamilies.Standard}:{ColumnNames.Classification}";

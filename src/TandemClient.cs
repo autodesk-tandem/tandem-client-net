@@ -574,6 +574,10 @@ namespace TandemSDK
                     if (items2 != null)
                     {
                         var modelElement = new ElementBase();
+                        var name = string.Empty;
+                        var nameOverride = string.Empty;
+                        var level = string.Empty;
+                        var levelOverride = string.Empty;
 
                         foreach (var el in items2)
                         {
@@ -597,16 +601,40 @@ namespace TandemSDK
                             }
                             else if (string.Equals(el.Key, QualifiedColumns.Name))
                             {
-                                modelElement.Name = el.Value;
+                                name = el.Value;
+                            }
+                            else if (string.Equals(el.Key, QualifiedColumns.NameOverride))
+                            {
+                                nameOverride = el.Value;
                             }
                             else if (string.Equals(el.Key, QualifiedColumns.Level))
                             {
-                                modelElement.LevelKey = Encoding.FromShortKey(el.Value, ElementFlags.FamilyType);
+                                level = Encoding.FromShortKey(el.Value, ElementFlags.FamilyType);
+                            }
+                            else if (string.Equals(el.Key, QualifiedColumns.LevelOverride))
+                            {
+                                levelOverride = Encoding.FromShortKey(el.Value, ElementFlags.FamilyType);
                             }
                             else
                             {
                                 modelElement.Properties.Add(el.Key, el.Value);
                             }
+                        }
+                        if (!string.IsNullOrEmpty(name))
+                        {
+                            modelElement.Name = name;
+                        }
+                        if (!string.IsNullOrEmpty(nameOverride))
+                        {
+                            modelElement.Name = nameOverride;
+                        }
+                        if (!string.IsNullOrEmpty(level))
+                        {
+                            modelElement.LevelKey = level;
+                        }
+                        if (!string.IsNullOrEmpty(levelOverride))
+                        {
+                            modelElement.LevelKey = levelOverride;
                         }
                         modelElements.Add(modelElement);
                     }
