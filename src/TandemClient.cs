@@ -325,11 +325,7 @@ namespace TandemSDK
                 }
                 if (userProps.Count > 0)
                 {
-                    var asset = new Asset(element)
-                    {
-                        AssetProperties = userProps
-                    };
-
+                    var asset = new Asset(element);
                     int? systemClassValue = null;
 
                     if (systemClass.HasValue)

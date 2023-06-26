@@ -20,7 +20,5 @@
 
         public List<RoomRef> Rooms { get; set; }
         public string? SystemClass { get; set; }
-
-        public IDictionary<string, string> AssetProperties { get; set; }
     }
 }
