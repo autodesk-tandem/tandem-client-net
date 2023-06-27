@@ -7,6 +7,7 @@
         {
             Rooms = new List<RoomRef>();
         }
+
         public Stream(Element element)
         : base(element)
         {

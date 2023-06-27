@@ -92,18 +92,17 @@ namespace TandemSDK
         public async Task<IEnumerable<Models.Stream>> GetFacilityStreamsAsync(string facilityId)
         {
             var model = await GetDefaultModelAsync(facilityId);
+            var classification = await GetFacilityClassificationAsync(facilityId);
             var result = new List<Models.Stream>();
 
             if (model != null)
             {
                 var streams = await GetStreamsAsync(model.ModelId);
 
-                foreach (var stream in streams)
-                {
-                    result.Add(stream);
-                }
+                result.AddRange(streams);
             }
             await AssignRoomNames(result);
+            AssignClassificationName(classification, result);
             return result;
         }
 
