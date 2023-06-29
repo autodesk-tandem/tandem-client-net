@@ -42,6 +42,7 @@
         public const long FamilyType = 0x01000000;
         public const long Level      = 0x01000001;
         public const long Stream     = 0x01000003;
+        public const long System     = 0x01000004;
     }
 
     public static class QualifiedColumns

@@ -99,6 +99,45 @@ namespace TandemSDK.Utils
             return (modelKeys.ToArray(), elementKeys.ToArray());
         }
 
+        public static string ToSystemId(string key)
+        {
+            var buff = Decode(key);
+
+            int id = buff[^4] << 24;
+            id |= buff[^3] << 16;
+            id |= buff[^2] << 8;
+            id |= buff[^1];
+
+            var buff2 = new byte[9];
+            var offset = new int[] { 0 };
+
+            var len = WriteVarint(buff2, offset, id);
+            var text = Convert.ToBase64String(buff2, 0, len);
+
+            // remove padding
+            return text.Replace("=", string.Empty);
+        }
+
+        private static int WriteVarint(byte[] buff, int[] offset, int value)
+        {
+            var startOffset = offset[0];
+
+            value = 0 | value;
+            do
+            {
+                var b = 0 | (value & 0x7f);
+
+                value = (int)((uint) value >> 7);
+                if (value != 0)
+                {
+                    b |= 0x80;
+                }
+                buff[offset[0]++] = (byte)b;
+            } while (value != 0);
+
+            return offset[0] - startOffset;
+        }
+
         private static byte[] Decode(string text, int start = 0)
         {
             var len = text.Length;

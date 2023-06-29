@@ -106,6 +106,20 @@ namespace TandemSDK
             return result;
         }
 
+        public async Task<IEnumerable<Models.System>> GetFacilitySystemsAsync(string facilityId)
+        {
+            var model = await GetDefaultModelAsync(facilityId);
+            var result = new List<Models.System>();
+
+            if (model != null)
+            {
+                var systems = await GetSystemsAsync(model.ModelId);
+
+                result.AddRange(systems);
+            }
+            return result;
+        }
+
         public async Task<Element[]> GetElementsAsync(string modelId)
         {
             var schema = await GetModelSchemaAsync(modelId);
@@ -318,6 +332,53 @@ namespace TandemSDK
                     continue;
                 }
                 result.Add(new Models.Stream(item));
+            }
+            return result.ToArray();
+        }
+
+        public async Task<Models.System[]> GetSystemsAsync(string modelId)
+        {
+            var items = await GetElementsAsync(modelId);
+            var result = new List<Models.System>();
+
+            foreach (var item in items)
+            {
+                if ((item.Flags & ElementFlags.System) != ElementFlags.System)
+                {
+                    continue;
+                }
+                var system = new Models.System(item);
+
+                system.Id = Encoding.ToSystemId(system.Key);
+                int? systemClass = null;
+                int? systemClassOverride = null;
+
+                foreach (var prop in item.Properties)
+                {
+                    if (string.Equals(prop.Key, QualifiedColumns.SystemClass))
+                    {
+                        systemClass = Convert.ToInt32(prop.Value);
+                    }
+                    if (string.Equals(prop.Key, QualifiedColumns.SystemClassOverride))
+                    {
+                        systemClassOverride = Convert.ToInt32(prop.Value);
+                    }
+                }
+                int? systemClassValue = null;
+
+                if (systemClass.HasValue)
+                {
+                    systemClassValue = systemClass.Value;
+                }
+                if (systemClassOverride.HasValue)
+                {
+                    systemClassValue = systemClassOverride.Value;
+                }
+                if (systemClassValue.HasValue)
+                {
+                    system.SystemClass = SystemClass.ToString(systemClassValue.Value);
+                }
+                result.Add(system);
             }
             return result.ToArray();
         }
