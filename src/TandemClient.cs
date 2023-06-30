@@ -120,6 +120,25 @@ namespace TandemSDK
 
                 result.AddRange(systems);
             }
+            var systemIds = result.Select(s => s.Id);
+
+            foreach (var link in facility.Links)
+            {
+                if (string.Equals(model.ModelId, link.ModelId))
+                {
+                    continue;
+                }
+                var elements = await GetElementsAsync(link.ModelId, new string[] { ColumnFamilies.Systems });
+                var systemElementsMap = GetSystemElementMap(elements);
+
+                foreach (var system in result)
+                {
+                    if (systemElementsMap.TryGetValue(system.Id, out var elementKeys))
+                    {
+                        system.ElementCount += elementKeys.Length;
+                    }
+                }
+            }
             return result;
         }
 
@@ -286,7 +305,7 @@ namespace TandemSDK
             return result;
         }
 
-        public async Task<Models.Group[]> GetGroupsAsync()
+        public async Task<Group[]> GetGroupsAsync()
         {
             var token = _getToken();
             var result = await GetAsync<Models.Group[]>(token, $"api/v1/groups");
@@ -481,7 +500,7 @@ namespace TandemSDK
             return result;
         }
 
-        private void AssignClassificationName<T>(FacilityClassification classification, IEnumerable<T> items ) where T : IWithClassification
+        private static void AssignClassificationName<T>(FacilityClassification classification, IEnumerable<T> items ) where T : IWithClassification
         {
             var classificationMap = new Dictionary<string, string>();
 
@@ -633,6 +652,36 @@ namespace TandemSDK
                 }
             }
             return result.ToArray();
+        }
+
+        private IDictionary<string, string[]> GetSystemElementMap(IEnumerable<Element> elements)
+        {
+            var map = new Dictionary<string, List<string>>();
+
+            foreach (var element in elements)
+            {
+                var props = element.Properties.Where(p => p.Key.StartsWith($"{ColumnFamilies.Systems}:"));
+
+                foreach (var prop in props)
+                {
+                    var systemId = prop.Key.Replace($"{ColumnFamilies.Systems}:", string.Empty);
+
+                    if (!map.TryGetValue(systemId, out var list))
+                    {
+                        list = new List<string>();
+
+                        map[systemId] = list;
+                    }
+                    list.Add(element.Key);
+                }
+            }
+            var result = new Dictionary<string, string[]>();
+
+            foreach (var item in map)
+            {
+                result[item.Key] = item.Value.ToArray();
+            }
+            return result;
         }
 
         private async Task<T> GetAsync<T>(string token, string endPoint)

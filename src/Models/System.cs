@@ -9,5 +9,6 @@
 
         public string? Id { get; set; }
         public string? SystemClass { get; set; }
+        public int ElementCount { get; set; } = 0;
     }
 }
