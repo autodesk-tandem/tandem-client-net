@@ -123,17 +123,22 @@ namespace TandemSDK
             return result;
         }
 
-        public async Task<Element[]> GetElementsAsync(string modelId)
+        public async Task<Element[]> GetElementsAsync(string modelId, string[]? additionalFamilies = null)
         {
             var schema = await GetModelSchemaAsync(modelId);
-            var response = await ScanAsync(modelId,
-                new string[]
-                {
-                    ColumnFamilies.Standard,
-                    ColumnFamilies.DtProperties,
-                    ColumnFamilies.Refs,
-                    ColumnFamilies.Xrefs
-                });
+            var families = new List<string>()
+            {
+                ColumnFamilies.Standard,
+                ColumnFamilies.DtProperties,
+                ColumnFamilies.Refs,
+                ColumnFamilies.Xrefs
+            };
+
+            if (additionalFamilies?.Length > 0)
+            {
+                families.AddRange(additionalFamilies);
+            }
+            var response = await ScanAsync(modelId, families.ToArray());
             var result = new List<Element>();
             var levelMap = new Dictionary<string, int>();
             var count = response?.Items.Length;
