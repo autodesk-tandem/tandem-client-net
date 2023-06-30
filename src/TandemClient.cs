@@ -25,6 +25,8 @@ namespace TandemSDK
             var token = _getToken();
             var result = await GetAsync<Facility>(token, $"api/v1/twins/{facilityId}");
 
+            // the id isn't included in response so it's added manually
+            result.Id = facilityId;
             return result;
         }
 
@@ -108,7 +110,8 @@ namespace TandemSDK
 
         public async Task<IEnumerable<Models.System>> GetFacilitySystemsAsync(string facilityId)
         {
-            var model = await GetDefaultModelAsync(facilityId);
+            var facility = await GetFacilityAsync(facilityId);
+            var model = GetDefaultModel(facility);
             var result = new List<Models.System>();
 
             if (model != null)
@@ -551,10 +554,9 @@ namespace TandemSDK
             }
         }
 
-        private async Task<Facility.Link?> GetDefaultModelAsync(string facilityId)
+        private static Facility.Link? GetDefaultModel(Facility facility)
         {
-            var facility = await GetFacilityAsync(facilityId);
-            var shortFacilityId = facilityId.Replace(Prefixes.Facility, string.Empty);
+            var shortFacilityId = facility.Id.Replace(Prefixes.Facility, string.Empty);
 
             foreach (var link in facility.Links)
             {
@@ -566,6 +568,13 @@ namespace TandemSDK
                 }
             }
             return null;
+        }
+
+        private async Task<Facility.Link?> GetDefaultModelAsync(string facilityId)
+        {
+            var facility = await GetFacilityAsync(facilityId);
+
+            return GetDefaultModel(facility);
         }
 
         private async Task<string[]> GetRoomNames(string[] modelIds, string[] elementKeys)

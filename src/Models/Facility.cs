@@ -2,6 +2,8 @@
 {
     public class Facility
     {
+        public string Id { get; set; }
+
         public class Document
         {
             public string Id { get; set; }
