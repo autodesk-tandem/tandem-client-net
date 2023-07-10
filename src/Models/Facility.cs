@@ -26,6 +26,7 @@
             public string ModelId { get; set; }
             public bool On { get; set; }
             public string AccessLevel { get; set; }
+            public bool Default { get; set; } = false;
         }
 
         public Link[] Links { get; set; }

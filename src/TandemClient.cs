@@ -27,6 +27,19 @@ namespace TandemSDK
 
             // the id isn't included in response so it's added manually
             result.Id = facilityId;
+            // set default model
+            var shortFacilityId = facilityId.Replace(Prefixes.Facility, string.Empty);
+
+            foreach (var link in result.Links)
+            {
+                var shortModelId = link.ModelId.Replace(Prefixes.Model, string.Empty);
+
+                if (string.Equals(shortFacilityId, shortModelId))
+                {
+                    link.Default = true;
+                    break;
+                }
+            }
             return result;
         }
 
