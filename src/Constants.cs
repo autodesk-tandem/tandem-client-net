@@ -35,6 +35,9 @@
         public const string SystemClassOverride    = "!b";
         public const string UniformatClass         = "u";
         public const string UniformatClassOverride = "!u";
+        public const string Elevation              = "el";
+        public const string ElevationOverride      = "!el";
+        public const string Parent                 = "p";
     }
 
     public static class ElementFlags
@@ -58,6 +61,8 @@
         public const string ClassificationOverride = $"{ColumnFamilies.Standard}:{ColumnNames.ClassificationOverride}";
         public const string UniformatClass         = $"{ColumnFamilies.Standard}:{ColumnNames.UniformatClass}";
         public const string UniformatClassOverride = $"{ColumnFamilies.Standard}:{ColumnNames.UniformatClassOverride}";
+        public const string Elevation              = $"{ColumnFamilies.Standard}:{ColumnNames.Elevation}";
+        public const string ElevationOverride      = $"{ColumnFamilies.Standard}:{ColumnNames.ElevationOverride}";
         public const string Level                  = $"{ColumnFamilies.Refs}:{ColumnNames.Level}";
         public const string LevelOverride          = $"{ColumnFamilies.Refs}:{ColumnNames.LevelOverride}";
         public const string Room                   = $"{ColumnFamilies.Refs}:{ColumnNames.Rooms}";

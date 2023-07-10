@@ -87,6 +87,20 @@ namespace TandemSDK
             return result;
         }
 
+        public async Task<IEnumerable<Level>> GetFacilityLevelsAsync(string facilityId)
+        {
+            var facility = await GetFacilityAsync(facilityId);
+            var result = new List<Level>();
+
+            foreach (var link in facility.Links)
+            {
+                var elements = await GetLevelsAsync(link.ModelId);
+
+                result.AddRange(elements);
+            }
+            return result;
+        }
+
         public async Task<IEnumerable<Room>> GetFacilityRoomsAsync(string facilityId)
         {
             var facility = await GetFacilityAsync(facilityId);
@@ -340,6 +354,37 @@ namespace TandemSDK
             var result = await GetAsync<ModelSchema>(token, $"api/v1/modeldata/{modelId}/schema");
 
             return result;
+        }
+
+        public async Task<Level[]> GetLevelsAsync(string modelId)
+        {
+            var items = await GetElementsAsync(modelId);
+            var result = new List<Level>();
+
+            foreach (var item in items)
+            {
+                if ((item.Flags & ElementFlags.Level) != ElementFlags.Level)
+                {
+                    continue;
+                }
+                var level = new Level(item);
+                double? elevationValue = null;
+
+                if (item.Properties.TryGetValue(QualifiedColumns.Elevation, out var elevation))
+                {
+                    elevationValue = Convert.ToDouble(elevation);
+                }
+                if (item.Properties.TryGetValue(QualifiedColumns.ElevationOverride, out elevation))
+                {
+                    elevationValue = Convert.ToDouble(elevation);
+                }
+                if (elevationValue.HasValue)
+                {
+                    level.Elevation = elevationValue;
+                }
+                result.Add(level);
+            }
+            return result.ToArray();
         }
 
         public async Task<Room[]> GetRoomsAsync(string modelId)
