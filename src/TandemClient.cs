@@ -1,7 +1,8 @@
 ﻿using Newtonsoft.Json;
-using System.Diagnostics;
 
 using TandemSDK.Models;
+using TandemSDK.Request;
+using TandemSDK.Response;
 using TandemSDK.Utils;
 
 namespace TandemSDK
@@ -18,6 +19,104 @@ namespace TandemSDK
             {
                 BaseAddress = new Uri("https://tandem.autodesk.com/")
             };
+        }
+
+
+        public async Task<CreateResponse> CreateAsync(string modelId, CreateRequest req)
+        {
+            var token = _getToken();
+
+            var response = await PostAsync<CreateResponse>(token, $"api/v1/modeldata/{modelId}/create", req);
+
+            return response;
+        }
+
+        public async Task<string> CreateStreamAsync(string modelId, string name, string uniformatClass, int categoryId,
+            string? classification = null,
+            string? parentXref = null,
+            string? roomXref = null,
+            string? levelRef = null)
+        {
+            var inputs = new List<object[]>
+            {
+                new object[]
+                {
+                    MutateActions.Insert,
+                    ColumnFamilies.Standard,
+                    ColumnNames.Name,
+                    name
+                },
+                new object[]
+                {
+                    MutateActions.Insert,
+                    ColumnFamilies.Standard,
+                    ColumnNames.ElementFlags,
+                    ElementFlags.Stream
+                },
+                new object[]
+                {
+                    MutateActions.Insert,
+                    ColumnFamilies.Standard,
+                    ColumnNames.UniformatClass,
+                    uniformatClass
+                },
+                new object[]
+                {
+                    MutateActions.Insert,
+                    ColumnFamilies.Standard,
+                    ColumnNames.CategoryId,
+                    categoryId
+                }
+            };
+
+            if (!string.IsNullOrEmpty(classification))
+            {
+                inputs.Add(new object[]
+                {
+                    MutateActions.Insert,
+                    ColumnFamilies.Standard,
+                    ColumnNames.Classification,
+                    classification
+                });
+            }
+            if (!string.IsNullOrEmpty(parentXref))
+            {
+                inputs.Add(new object[]
+                {
+                    MutateActions.Insert,
+                    ColumnFamilies.Xrefs,
+                    ColumnNames.Parent,
+                    parentXref
+                });
+            }
+            if (!string.IsNullOrEmpty(roomXref))
+            {
+                inputs.Add(new object[]
+                {
+                    MutateActions.Insert,
+                    ColumnFamilies.Xrefs,
+                    ColumnNames.Rooms,
+                    roomXref
+                });
+            }
+            if (!string.IsNullOrEmpty(levelRef))
+            {
+                inputs.Add(new object[]
+                {
+                    MutateActions.Insert,
+                    ColumnFamilies.Refs,
+                    ColumnNames.Level,
+                    levelRef
+                });
+            }
+
+            var result = await CreateAsync(modelId, new CreateRequest
+            {
+                Mutations = inputs.ToArray(),
+                Description = "Create stream"
+            });
+
+            return result.Key;
         }
 
         public async Task<Facility> GetFacilityAsync(string facilityId)
@@ -532,6 +631,19 @@ namespace TandemSDK
             return result;
         }
 
+        public async Task ResetStreamsSecretsAsync(string modelId, string[] keys, bool hardReset = false)
+        {
+            var token = _getToken();
+
+            await PostAsync<object>(token, $"api/v1/models/{modelId}/resetstreamssecrets", new ResetStreamsSecretsRequest
+            {
+                Keys = keys,
+                HardReset = hardReset
+            });
+
+            return;
+        }
+
         public async Task<ScanResponse?> ScanAsync(string modelId, string[] families, string[]? keys = null)
         {
             var token = _getToken();
@@ -556,6 +668,14 @@ namespace TandemSDK
             var result = DeserializeScanResponse(items);
 
             return result;
+        }
+
+        public async Task SendTimeSeriesDataAsync(string modelId, IEnumerable<object> values, string propertyName = "id")
+        {
+            var token = _getToken();
+            var url = $"api/v1/timeseries/models/{modelId}/webhooks/generic?idpath={propertyName}";
+
+            await PostAsync<object>(token, url, values);
         }
 
         private static void AssignClassificationName<T>(FacilityClassification classification, IEnumerable<T> items ) where T : IWithClassification

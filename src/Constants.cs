@@ -1,5 +1,10 @@
 ﻿namespace TandemSDK
 {
+    public static class MutateActions
+    {
+        public const string Insert = "i";
+    }
+
     public static class ColumnFamilies
     {
         public const string Status          = "s";
