@@ -1,13 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Text;
 
 namespace TandemSDK.Utils
 {
-    internal class Encoding
+    public class Encoding
     {
         private const int kModelIdSize = 16;
         private const int kElementIdSize = 20;
@@ -25,7 +20,7 @@ namespace TandemSDK.Utils
                 B64ToUInt6[i] = B64ToUInt6Gen(i);
             }
         }
-        
+
         public static string FromShortKey(string shortKey, long? flags)
         {
             var buff = Decode(shortKey, 4);
@@ -84,7 +79,7 @@ namespace TandemSDK.Utils
                 }
                 var modelBuff = new byte[kModelIdSize];
 
-                Buffer.BlockCopy(buff, offset, modelBuff, 0, 16);
+                Buffer.BlockCopy(buff, offset, modelBuff, 0, kModelIdSize);
                 string modelKey = MakeWebSafe(Convert.ToBase64String(modelBuff));
 
                 modelKeys.Add(modelKey);
@@ -97,6 +92,18 @@ namespace TandemSDK.Utils
                 offset += (kModelIdSize + kElementIdWithFlagsSize);
             }
             return (modelKeys.ToArray(), elementKeys.ToArray());
+        }
+
+        public static string ToShortKey(string key)
+        {
+            key = key.Replace('-', '+');
+            key = key.Replace('_', '/');
+            key = Pad(key);
+            var buff = Convert.FromBase64String(key);
+            var result = new byte[kElementIdSize];
+
+            Buffer.BlockCopy(buff, kElementFlagsSize, result, 0, kElementIdSize);
+            return MakeWebSafe(Convert.ToBase64String(result));
         }
 
         public static string ToSystemId(string key)
@@ -116,6 +123,35 @@ namespace TandemSDK.Utils
 
             // remove padding
             return text.Replace("=", string.Empty);
+        }
+
+        public static string ToXrefKey(string modelId, string elementKey)
+        {
+            modelId = modelId.Replace(Prefixes.Model, string.Empty);
+            modelId = modelId.Replace('-', '+');
+            modelId = modelId.Replace('_', '/');
+            modelId = Pad(modelId);
+            var modelBuff = Convert.FromBase64String(modelId);
+
+            elementKey = elementKey.Replace('-', '+');
+            elementKey = elementKey.Replace('_', '/');
+            elementKey = Pad(elementKey);
+            var elementBuff = Convert.FromBase64String(elementKey);
+            var result = new byte[kModelIdSize + kElementIdWithFlagsSize];
+
+            Buffer.BlockCopy(modelBuff, 0, result, 0, kModelIdSize);
+            Buffer.BlockCopy(elementBuff, 0, result, kModelIdSize, kElementIdWithFlagsSize);
+            return MakeWebSafe(Convert.ToBase64String(result));
+        }
+
+        private static string Pad(string text)
+        {
+            int count = text.Length % 4;
+            if (count > 0)
+            {
+                text += new string('=', 4 - count);
+            }
+            return text;
         }
 
         private static int WriteVarint(byte[] buff, int[] offset, int value)
@@ -188,7 +224,7 @@ namespace TandemSDK.Utils
             return (int)((uint)(length * 3 + 1) >> 2);
         }
 
-        private static string MakeWebSafe(string text)
+        public static string MakeWebSafe(string text)
         {
             var sb = new StringBuilder();
 
