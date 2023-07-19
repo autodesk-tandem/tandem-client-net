@@ -1,11 +1,11 @@
 ﻿using Newtonsoft.Json;
 
-using TandemSDK.Models;
-using TandemSDK.Request;
-using TandemSDK.Response;
-using TandemSDK.Utils;
+using Autodesk.Services.Tandem.Models;
+using Autodesk.Services.Tandem.Request;
+using Autodesk.Services.Tandem.Response;
+using Autodesk.Services.Tandem.Utils;
 
-namespace TandemSDK
+namespace Autodesk.Services.Tandem
 {
     public class TandemClient
     {
@@ -832,7 +832,7 @@ namespace TandemSDK
             return result.ToArray();
         }
 
-        private IDictionary<string, string[]> GetSystemElementMap(IEnumerable<Element> elements)
+        private static IDictionary<string, string[]> GetSystemElementMap(IEnumerable<Element> elements)
         {
             var map = new Dictionary<string, List<string>>();
 

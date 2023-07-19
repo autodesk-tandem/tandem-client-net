@@ -1,6 +1,6 @@
 ﻿using System.Text;
 
-namespace TandemSDK.Utils
+namespace Autodesk.Services.Tandem.Utils
 {
     public class Encoding
     {

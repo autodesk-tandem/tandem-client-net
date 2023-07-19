@@ -1,4 +1,6 @@
-﻿namespace TandemSDK.Models
+﻿using Autodesk.Services.Tandem.Models;
+
+namespace Autodesk.Services.Tandem.Response
 {
     public class ScanResponse
     {

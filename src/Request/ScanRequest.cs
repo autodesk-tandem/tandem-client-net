@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace TandemSDK.Models
+namespace Autodesk.Services.Tandem.Request
 {
     public class ScanRequest
     {

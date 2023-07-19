@@ -1,4 +1,4 @@
-﻿namespace TandemSDK
+﻿namespace Autodesk.Services.Tandem
 {
     public static class MutateActions
     {

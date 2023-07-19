@@ -1,4 +1,4 @@
-﻿namespace TandemSDK.Utils
+﻿namespace Autodesk.Services.Tandem.Utils
 {
     internal class SystemClass
     {

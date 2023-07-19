@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TandemSDK.Models
+namespace Autodesk.Services.Tandem.Models
 {
     public class Group
     {

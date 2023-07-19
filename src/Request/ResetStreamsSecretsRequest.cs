@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace TandemSDK.Request
+namespace Autodesk.Services.Tandem.Request
 {
     public class ResetStreamsSecretsRequest
     {

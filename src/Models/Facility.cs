@@ -1,4 +1,4 @@
-﻿namespace TandemSDK.Models
+﻿namespace Autodesk.Services.Tandem.Models
 {
     public class Facility
     {
