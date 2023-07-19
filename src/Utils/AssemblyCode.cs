@@ -13,7 +13,7 @@
             public string Notes { get; set; }
         }
 
-        private static readonly List<Item> items = new List<Item>();
+        private static readonly List<Item> items = new();
 
         static AssemblyCode()
         {
