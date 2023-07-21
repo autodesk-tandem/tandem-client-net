@@ -94,6 +94,40 @@ namespace Autodesk.Services.Tandem.Utils
             return (modelKeys.ToArray(), elementKeys.ToArray());
         }
 
+        /// <summary>
+        /// Converts full element key to Revit GUID
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns>A string in the form of Revit Unique ID</returns>
+        public static string ToElementGUID(string key)
+        {
+            key = key.Replace('-', '+');
+            key = key.Replace('_', '/');
+            key = Pad(key);
+            var buff = Convert.FromBase64String(key);
+            var bin = new byte[kElementIdSize];
+
+            Buffer.BlockCopy(buff, kElementFlagsSize, bin, 0, kElementIdSize);
+            var hex = BitConverter.ToString(bin).Replace("-", "").ToLower();
+            var hexGroups = new int[] { 8, 4, 4, 4, 12 };
+            var start = 0;
+            var result = string.Empty;
+
+            for (var i = 0; i < hexGroups.Length; i++)
+            {
+                var len = hexGroups[i];
+
+                result += hex.Substring(start, len);
+                result += "-";
+                start += len;
+            }
+            if (start < hex.Length)
+            {
+                result += hex[start..];
+            }
+            return result;
+        }
+
         public static string ToShortKey(string key)
         {
             key = key.Replace('-', '+');
