@@ -21,7 +21,6 @@ namespace Autodesk.Services.Tandem
             };
         }
 
-
         public async Task<CreateResponse> CreateAsync(string modelId, CreateRequest req)
         {
             var token = _getToken();
@@ -629,6 +628,15 @@ namespace Autodesk.Services.Tandem
             var result = await GetAsync<IDictionary<string, Facility>>(token, $"api/v1/users/@me/twins");
 
             return result;
+        }
+
+        public async Task<MutateResponse> MutateAsync(string modelId, MutateRequest req)
+        {
+            var token = _getToken();
+
+            var response = await PostAsync<MutateResponse>(token, $"api/v1/modeldata/{modelId}/mutate", req);
+
+            return response;
         }
 
         public async Task ResetStreamsSecretsAsync(string modelId, string[] keys, bool hardReset = false)
