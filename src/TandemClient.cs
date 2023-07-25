@@ -9,15 +9,22 @@ namespace Autodesk.Services.Tandem
 {
     public class TandemClient
     {
+        private readonly TandemClientOptions _options;
         private readonly Func<string> _getToken;
         private readonly HttpClient _client;
 
         public TandemClient(Func<string> tokenCallback)
+            : this(tokenCallback, new TandemClientOptions())
         {
+        }
+
+        public TandemClient(Func<string> tokenCallback, TandemClientOptions options)
+        {
+            _options = options;
             _getToken = tokenCallback;
             _client = new HttpClient
             {
-                BaseAddress = new Uri("https://tandem.autodesk.com/")
+                BaseAddress = new Uri(_options.BaseAddress)
             };
         }
 
