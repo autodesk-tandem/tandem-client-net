@@ -141,7 +141,7 @@ namespace Autodesk.Services.Tandem
             return result;
         }
 
-        public async Task<IEnumerable<Asset>> GetFacilityAssetsAsync(string facilityId)
+        public async Task<IEnumerable<Asset>> GetFacilityAssetsAsync(string facilityId, string[]? additionalFamilies = null)
         {
             var facility = await GetFacilityAsync(facilityId);
             var classification = await GetFacilityClassificationAsync(facilityId);
@@ -149,7 +149,7 @@ namespace Autodesk.Services.Tandem
 
             foreach (var link in facility.Links)
             {
-                var assets = await GetTaggedAssetsAsync(link.ModelId);
+                var assets = await GetTaggedAssetsAsync(link.ModelId, additionalFamilies);
 
                 result.AddRange(assets);
             }
@@ -167,7 +167,7 @@ namespace Autodesk.Services.Tandem
             return result;
         }
 
-        public async Task<IEnumerable<Element>> GetFacilityElementsAsync(string facilityId)
+        public async Task<IEnumerable<Element>> GetFacilityElementsAsync(string facilityId, string[]? additionalFamilies = null)
         {
             var facility = await GetFacilityAsync(facilityId);
             var classification = await GetFacilityClassificationAsync(facilityId);
@@ -175,7 +175,7 @@ namespace Autodesk.Services.Tandem
 
             foreach (var link in facility.Links)
             {
-                var elements = await GetElementsAsync(link.ModelId);
+                var elements = await GetElementsAsync(link.ModelId, additionalFamilies);
 
                 result.AddRange(elements);
             }
@@ -566,10 +566,10 @@ namespace Autodesk.Services.Tandem
             return result.ToArray();
         }
 
-        public async Task<Asset[]> GetTaggedAssetsAsync(string modelId)
+        public async Task<Asset[]> GetTaggedAssetsAsync(string modelId, string[]? additionalFamilies = null)
         {
             var schema = await GetModelSchemaAsync(modelId);
-            var elements = await GetElementsAsync(modelId);
+            var elements = await GetElementsAsync(modelId, additionalFamilies);
             var result = new List<Asset>();
 
             foreach (var element in elements)
