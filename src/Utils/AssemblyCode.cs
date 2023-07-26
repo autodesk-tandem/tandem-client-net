@@ -1,4 +1,4 @@
-﻿namespace Autodesk.Services.Tandem.Utils
+﻿namespace Autodesk.Tandem.Client.Utils
 {
     internal class AssemblyCode
     {

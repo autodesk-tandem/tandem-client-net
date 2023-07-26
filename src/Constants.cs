@@ -1,4 +1,4 @@
-﻿namespace Autodesk.Services.Tandem
+﻿namespace Autodesk.Tandem.Client
 {
     public static class MutateActions
     {

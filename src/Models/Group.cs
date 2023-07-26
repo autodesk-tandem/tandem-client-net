@@ -1,11 +1,6 @@
 ﻿using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Autodesk.Services.Tandem.Models
+namespace Autodesk.Tandem.Client.Models
 {
     public class Group
     {

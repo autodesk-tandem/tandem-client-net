@@ -1,11 +1,11 @@
 ﻿using Newtonsoft.Json;
 
-using Autodesk.Services.Tandem.Models;
-using Autodesk.Services.Tandem.Request;
-using Autodesk.Services.Tandem.Response;
-using Autodesk.Services.Tandem.Utils;
+using Autodesk.Tandem.Client.Models;
+using Autodesk.Tandem.Client.Request;
+using Autodesk.Tandem.Client.Response;
+using Autodesk.Tandem.Client.Utils;
 
-namespace Autodesk.Services.Tandem
+namespace Autodesk.Tandem.Client
 {
     public class TandemClient
     {

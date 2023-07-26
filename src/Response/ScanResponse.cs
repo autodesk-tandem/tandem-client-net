@@ -1,6 +1,6 @@
-﻿using Autodesk.Services.Tandem.Models;
+﻿using Autodesk.Tandem.Client.Models;
 
-namespace Autodesk.Services.Tandem.Response
+namespace Autodesk.Tandem.Client.Response
 {
     public class ScanResponse
     {

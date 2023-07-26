@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace Autodesk.Services.Tandem.Models
+namespace Autodesk.Tandem.Client.Models
 {
     public class ModelSchema
     {

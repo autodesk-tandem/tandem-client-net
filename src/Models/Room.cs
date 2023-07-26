@@ -1,4 +1,4 @@
-﻿namespace Autodesk.Services.Tandem.Models
+﻿namespace Autodesk.Tandem.Client.Models
 {
     public class Room : ElementBase
     {

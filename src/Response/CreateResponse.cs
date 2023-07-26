@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace Autodesk.Services.Tandem.Response
+namespace Autodesk.Tandem.Client.Response
 {
     public class CreateResponse
     {
