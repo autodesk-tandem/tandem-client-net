@@ -10,14 +10,14 @@ This is sample implementation of .NET wrapper for Autodesk Tandem REST API. It e
 * [Newtonsoft.Json](https://www.newtonsoft.com/json)
 
 ## Getting started
-The main object for interacting with Autodesk Tandem is `TandemClient`. To use `TandemClient` you need to create new instance and provide funcition to obtain access token:
+The main object for interacting with Autodesk Tandem is `TandemClient`. To use `TandemClient` you need to create a new instance and provide a function to obtain an access token:
 ```cs
 var client = new TandemClient(() => GetToken());
 ```
 
-For more details related to authentication follow [this sample](./samples/Sample01_Authentication.md).
+For more details related to authentication, follow [this sample](./samples/Sample01_Authentication.md).
 
-The `TandemClient` object provides methods to get data from Tandem database, for example `GetFacilityAsync` provides details about given facility:
+The `TandemClient` object provides methods to get data from the Tandem database. For example, `GetFacilityAsync` provides details about a given facility:
 ```cs
 var facility = await client.GetFacilityAsync("urn:adsk.dtt:ZS-qm-sbQWWJnB5tcwBjhQ");
 
