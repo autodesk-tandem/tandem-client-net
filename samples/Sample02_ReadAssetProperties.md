@@ -60,3 +60,12 @@ IFS END SUNCTION PUMP
   Common.Assembly Code: D3050
   Common.Classification: 3d
 ```
+
+By default following properties are included:
+* Common
+* Custom
+
+If needed it's possible to include additional properties using `additionalProperties` parameter, i.e. this includes properties from source file:
+```cs
+var assets = await client.GetFacilityAssetsAsync(facilityId, new string[] { ColumnFamilies.Source });
+```
