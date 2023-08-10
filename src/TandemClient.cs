@@ -256,7 +256,7 @@ namespace Autodesk.Tandem.Client
 
             foreach (var link in facility.Links)
             {
-                if (string.Equals(model.ModelId, link.ModelId))
+                if (string.Equals(model?.ModelId, link.ModelId))
                 {
                     continue;
                 }
@@ -265,7 +265,7 @@ namespace Autodesk.Tandem.Client
 
                 foreach (var system in result)
                 {
-                    if (systemElementsMap.TryGetValue(system.Id, out var elementKeys))
+                    if (!string.IsNullOrEmpty(system?.Id) && systemElementsMap.TryGetValue(system.Id, out var elementKeys))
                     {
                         system.ElementCount += elementKeys.Length;
                     }
