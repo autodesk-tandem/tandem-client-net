@@ -9,21 +9,9 @@ namespace Autodesk.Tandem.Client.Utils
         private const int kElementFlagsSize = 4;
         private const int kElementIdWithFlagsSize = kElementIdSize + kElementFlagsSize;
 
-        private static readonly int[] B64ToUInt6;
-
-        static Encoding()
-        {
-            B64ToUInt6 = new int[128];
-
-            for (int i = 0; i < 128; i++)
-            {
-                B64ToUInt6[i] = B64ToUInt6Gen(i);
-            }
-        }
-
         public static string FromShortKey(string shortKey, long? flags)
         {
-            var buff = Decode(shortKey, 4);
+            var buff = Decode(shortKey, kElementFlagsSize);
             
             if (flags.HasValue)
             {
@@ -210,52 +198,19 @@ namespace Autodesk.Tandem.Client.Utils
 
         private static byte[] Decode(string text, int start = 0)
         {
-            var len = text.Length;
-            var outputLen = Base64DecodedLength(len);
-            var buff = new List<byte>();
+            text = text.Replace('-', '+');
+            text = text.Replace('_', '/');
+            text = Pad(text);
+            var buff = Convert.FromBase64String(text);
 
-            if (start > 0)
+            if (start == 0)
             {
-                while (buff.Count < start)
-                {
-                    buff.Add(0);
-                }
+                return buff;
             }
-            for (int nMod3, nMod4, nUInt24 = 0, nOutIdx = 0, nInIdx = 0; nInIdx < len; nInIdx++)
-            {
-                nMod4 = nInIdx & 3;
-                nUInt24 |= B64ToUInt6[text[nInIdx]] << 18 - 6 * nMod4;
-                if (nMod4 == 3 || len - nInIdx == 1)
-                {
-                    for (nMod3 = 0; nMod3 < 3 && nOutIdx < outputLen; nMod3++, nOutIdx++)
-                    {
-                        buff.Insert(start + nOutIdx, (byte)(int)((uint)nUInt24 >> ((int)((uint)16 >> nMod3 & 24)) & 255));
-                    }
-                    nUInt24 = 0;
-                }
-            }
-            return buff.ToArray();
-        }
+            var result = new byte[start + buff.Length];
 
-        private static int B64ToUInt6Gen(int nChr)
-        {
-            return nChr > 64 && nChr < 91 ?
-                nChr - 65
-                : nChr > 96 && nChr < 123 ?
-                    nChr - 71
-                    : nChr > 47 && nChr < 58 ?
-                        nChr + 4
-                        : nChr == 43 || nChr == 45 ?
-                            62
-                            : nChr == 47 || nChr == 95 ?
-                                63
-                                :
-                                0;
-        }
-
-        private static int Base64DecodedLength(int length)
-        {
-            return (int)((uint)(length * 3 + 1) >> 2);
+            buff.CopyTo(result, start);
+            return result;
         }
 
         public static string MakeWebSafe(string text)
