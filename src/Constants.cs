@@ -47,11 +47,18 @@
 
     public static class ElementFlags
     {
-        public const long Room       = 0x00000005;
-        public const long FamilyType = 0x01000000;
-        public const long Level      = 0x01000001;
-        public const long Stream     = 0x01000003;
-        public const long System     = 0x01000004;
+        public const long SimpleElement     = 0x00000000;
+        public const long NestedChild       = 0x00000001;
+        public const long NestedParent      = 0x00000002;
+        public const long CompositeChild    = 0x00000003;
+        public const long CompositeParent   = 0x00000003;
+        public const long Room              = 0x00000005;
+        public const long FamilyType        = 0x01000000;
+        public const long Level             = 0x01000001;
+        public const long DocumentRoot      = 0x01000002;
+        public const long Stream            = 0x01000003;
+        public const long System            = 0x01000004;
+        public const long Virtual           = 0x03000000;
     }
 
     public static class QualifiedColumns
@@ -70,6 +77,8 @@
         public const string ElevationOverride      = $"{ColumnFamilies.Standard}:{ColumnNames.ElevationOverride}";
         public const string Level                  = $"{ColumnFamilies.Refs}:{ColumnNames.Level}";
         public const string LevelOverride          = $"{ColumnFamilies.Refs}:{ColumnNames.LevelOverride}";
+        public const string Parent                 = $"{ColumnFamilies.Refs}:{ColumnNames.Parent}";
+        public const string XParent                = $"{ColumnFamilies.Xrefs}:{ColumnNames.Parent}";
         public const string Room                   = $"{ColumnFamilies.Refs}:{ColumnNames.Rooms}";
         public const string XRoom                  = $"{ColumnFamilies.Xrefs}:{ColumnNames.Rooms}";
     }
