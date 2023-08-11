@@ -9,7 +9,7 @@ namespace Autodesk.Tandem.Client.Utils
         private const int kElementFlagsSize = 4;
         private const int kElementIdWithFlagsSize = kElementIdSize + kElementFlagsSize;
 
-        public static string FromShortKey(string shortKey, long? flags)
+        public static string FromShortKey(string shortKey, long? flags = null)
         {
             var buff = Decode(shortKey, kElementFlagsSize);
             

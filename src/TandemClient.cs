@@ -274,7 +274,7 @@ namespace Autodesk.Tandem.Client
             return result;
         }
 
-        public async Task<Element[]> GetElementsAsync(string modelId, string[]? additionalFamilies = null)
+        public async Task<Element> GetElementAsync(string modelId, string elementKey, string[]? additionalFamilies = null)
         {
             var schema = await GetModelSchemaAsync(modelId);
             var families = new List<string>()
@@ -289,144 +289,35 @@ namespace Autodesk.Tandem.Client
             {
                 families.AddRange(additionalFamilies);
             }
-            var response = await ScanAsync(modelId, families.ToArray());
-            var result = new List<Element>();
-            var levelMap = new Dictionary<string, int>();
-            var count = response?.Items.Length;
-            var shortModelId = modelId.Replace(Prefixes.Model, string.Empty);
+            var response = await ScanAsync(modelId, families.ToArray(), new string[] { elementKey });
 
-            for (var i = 0; i < count; i++)
+            var result = ProcessElements(modelId, schema, response?.Items);
+
+            if (result.Length != 1)
             {
-                var item = response?.Items[i];
-
-                if (item == null)
-                {
-                    continue;
-                }
-                var room = string.Empty;
-                var xroom = string.Empty;
-                var assemblyCode = string.Empty;
-                var assemblyCodeOverride = string.Empty;
-                var classification = string.Empty;
-                var classificationOverride = string.Empty;
-
-                foreach (var prop in item.Properties)
-                {
-                    var propDef = schema.Attributes.SingleOrDefault(a => string.Equals(a.Id, prop.Key));
-
-                    if (propDef == null)
-                    {
-                        continue;
-                    }
-                    if (string.Equals(propDef.Id, QualifiedColumns.XRoom))
-                    {
-                        xroom = prop.Value;
-                    }
-                    if (string.Equals(propDef.Id, QualifiedColumns.Room))
-                    {
-                        room = prop.Value;
-                    }
-                    if (string.Equals(propDef.Id, QualifiedColumns.Classification))
-                    {
-                        classification = prop.Value;
-                    }
-                    if (string.Equals(propDef.Id, QualifiedColumns.ClassificationOverride))
-                    {
-                        classificationOverride = prop.Value;
-                    }
-                    if (string.Equals(propDef.Id, QualifiedColumns.UniformatClass))
-                    {
-                        assemblyCode = prop.Value;
-                    }
-                    if (string.Equals(propDef.Id, QualifiedColumns.UniformatClassOverride))
-                    {
-                        assemblyCodeOverride = prop.Value;
-                    }
-                }
-                // store index of the level
-                if ((item.Flags & ElementFlags.Level) == ElementFlags.Level)
-                {
-                    levelMap[item.Key] = i;
-                }
-                var element = new Element(item)
-                {
-                    ModelId = shortModelId
-                };
-
-                if (!string.IsNullOrEmpty(assemblyCode))
-                {
-                    element.UniformatClassId = assemblyCode;
-                }
-                if (!string.IsNullOrEmpty(assemblyCodeOverride))
-                {
-                    element.UniformatClassId = assemblyCodeOverride;
-                }
-                // resolve assembly code
-                if (!string.IsNullOrEmpty(element.UniformatClassId))
-                {
-                    var code = AssemblyCode.UniformatToAssemblyCode(element.UniformatClassId);
-
-                    element.AssemblyCode = code;
-                }
-                if (!string.IsNullOrEmpty(classification))
-                {
-                    element.ClassificationId = classification;
-                }
-                if (!string.IsNullOrEmpty(classificationOverride))
-                {
-                    element.ClassificationId = classificationOverride;
-                }
-                if (!string.IsNullOrEmpty(room))
-                {
-                    var roomElementKeys = Encoding.FromShortKeyArray(room);
-
-                    for (var j = 0; j < roomElementKeys.Length; j++)
-                    {
-                        element.Rooms.Add(new RoomRef
-                        {
-                            ModelId = shortModelId,
-                            Key = roomElementKeys[j]
-                        });
-                    }
-                }
-                if (!string.IsNullOrEmpty(xroom))
-                {
-                    var (roomModelIds, roomElementKeys) = Encoding.FromXrefKey(xroom);
-
-                    for (var j = 0; j < roomModelIds.Length; j++)
-                    {
-                        element.Rooms.Add(new RoomRef
-                        {
-                            ModelId = roomModelIds[j],
-                            Key = roomElementKeys[j]
-                        });
-                    }
-                }
-                result.Add(element);
+                throw new ApplicationException("Failed to obtain elements");
             }
-            // resolve level names
-            if (result.Count > 0)
+            return result[0];
+        }
+
+        public async Task<Element[]> GetElementsAsync(string modelId, string[]? additionalFamilies = null, string[]? keys = null)
+        {
+            var schema = await GetModelSchemaAsync(modelId);
+            var families = new List<string>()
             {
-                foreach (var item in result)
-                {
-                    if (string.IsNullOrEmpty(item.LevelKey))
-                    {
-                        continue;
-                    }
-                    if (!levelMap.TryGetValue(item.LevelKey, out int levelIndex))
-                    {
-                        continue;
-                    }
-                    var levelDetails = response?.Items[levelIndex];
+                ColumnFamilies.Standard,
+                ColumnFamilies.DtProperties,
+                ColumnFamilies.Refs,
+                ColumnFamilies.Xrefs
+            };
 
-                    if (levelDetails == null)
-                    {
-                        continue;
-                    }
-                    item.Level = levelDetails.Name;
-                }
+            if (additionalFamilies?.Length > 0)
+            {
+                families.AddRange(additionalFamilies);
             }
-            return result.ToArray();
+            var response = await ScanAsync(modelId, families.ToArray(), keys);
+
+            return ProcessElements(modelId, schema, response.Items);
         }
 
         public async Task<IDictionary<string, Facility>> GetGroupFacilitiesAsync(string groupId)
@@ -875,6 +766,173 @@ namespace Autodesk.Tandem.Client
                 result[item.Key] = item.Value.ToArray();
             }
             return result;
+        }
+
+        public Element[] ProcessElements(string modelId, ModelSchema schema, ElementBase[] items)
+        {
+            var result = new List<Element>();
+            var levelMap = new Dictionary<string, int>();
+            var count = items.Length;
+            var shortModelId = modelId.Replace(Prefixes.Model, string.Empty);
+
+            for (var i = 0; i < count; i++)
+            {
+                var item = items[i];
+
+                if (item == null)
+                {
+                    continue;
+                }
+                var room = string.Empty;
+                var xroom = string.Empty;
+                var parent = string.Empty;
+                var xparent = string.Empty;
+                var assemblyCode = string.Empty;
+                var assemblyCodeOverride = string.Empty;
+                var classification = string.Empty;
+                var classificationOverride = string.Empty;
+
+                foreach (var prop in item.Properties)
+                {
+                    var propDef = schema.Attributes.SingleOrDefault(a => string.Equals(a.Id, prop.Key));
+
+                    if (propDef == null)
+                    {
+                        continue;
+                    }
+                    if (string.Equals(propDef.Id, QualifiedColumns.Parent))
+                    {
+                        parent = prop.Value;
+                    }
+                    if (string.Equals(propDef.Id, QualifiedColumns.XParent))
+                    {
+                        xparent = prop.Value;
+                    }
+                    if (string.Equals(propDef.Id, QualifiedColumns.XRoom))
+                    {
+                        xroom = prop.Value;
+                    }
+                    if (string.Equals(propDef.Id, QualifiedColumns.Room))
+                    {
+                        room = prop.Value;
+                    }
+                    if (string.Equals(propDef.Id, QualifiedColumns.Classification))
+                    {
+                        classification = prop.Value;
+                    }
+                    if (string.Equals(propDef.Id, QualifiedColumns.ClassificationOverride))
+                    {
+                        classificationOverride = prop.Value;
+                    }
+                    if (string.Equals(propDef.Id, QualifiedColumns.UniformatClass))
+                    {
+                        assemblyCode = prop.Value;
+                    }
+                    if (string.Equals(propDef.Id, QualifiedColumns.UniformatClassOverride))
+                    {
+                        assemblyCodeOverride = prop.Value;
+                    }
+                }
+                // store index of the level
+                if ((item.Flags & ElementFlags.Level) == ElementFlags.Level)
+                {
+                    levelMap[item.Key] = i;
+                }
+                var element = new Element(item)
+                {
+                    ModelId = shortModelId
+                };
+
+                if (!string.IsNullOrEmpty(assemblyCode))
+                {
+                    element.UniformatClassId = assemblyCode;
+                }
+                if (!string.IsNullOrEmpty(assemblyCodeOverride))
+                {
+                    element.UniformatClassId = assemblyCodeOverride;
+                }
+                // resolve assembly code
+                if (!string.IsNullOrEmpty(element.UniformatClassId))
+                {
+                    var code = AssemblyCode.UniformatToAssemblyCode(element.UniformatClassId);
+
+                    element.AssemblyCode = code;
+                }
+                if (!string.IsNullOrEmpty(classification))
+                {
+                    element.ClassificationId = classification;
+                }
+                if (!string.IsNullOrEmpty(classificationOverride))
+                {
+                    element.ClassificationId = classificationOverride;
+                }
+                if (!string.IsNullOrEmpty(parent))
+                {
+                    element.ParentKey = Encoding.FromShortKey(parent, ElementFlags.SimpleElement);
+                    element.ParentModelId = element.ModelId;
+
+                }
+                if (!string.IsNullOrEmpty(xparent))
+                {
+                    var (parentModelIds, parentKeys) = Encoding.FromXrefKey(xparent);
+
+                    if ((parentModelIds.Length > 0) && (parentKeys.Length > 0))
+                    {
+                        element.ParentKey = parentKeys[0];
+                        element.ParentModelId = parentModelIds[0];
+                    }
+                }
+                if (!string.IsNullOrEmpty(room))
+                {
+                    var roomElementKeys = Encoding.FromShortKeyArray(room);
+
+                    for (var j = 0; j < roomElementKeys.Length; j++)
+                    {
+                        element.Rooms.Add(new RoomRef
+                        {
+                            ModelId = shortModelId,
+                            Key = roomElementKeys[j]
+                        });
+                    }
+                }
+                if (!string.IsNullOrEmpty(xroom))
+                {
+                    var (roomModelIds, roomElementKeys) = Encoding.FromXrefKey(xroom);
+
+                    for (var j = 0; j < roomModelIds.Length; j++)
+                    {
+                        element.Rooms.Add(new RoomRef
+                        {
+                            ModelId = roomModelIds[j],
+                            Key = roomElementKeys[j]
+                        });
+                    }
+                }
+                result.Add(element);
+            }
+            // resolve level names
+            if (result.Count > 0)
+            {
+                foreach (var item in result)
+                {
+                    if (string.IsNullOrEmpty(item.LevelKey))
+                    {
+                        continue;
+                    }
+                    if (!levelMap.TryGetValue(item.LevelKey, out int levelIndex))
+                    {
+                        continue;
+                    }
+                    var levelDetails = items[levelIndex];
+
+                    if (levelDetails == null)
+                    {
+                        continue;
+                    }
+                    item.Level = levelDetails.Name;
+                }
+            }
+            return result.ToArray();
         }
 
         private async Task<T> GetAsync<T>(string token, string endPoint)
