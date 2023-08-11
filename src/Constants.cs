@@ -31,6 +31,7 @@
         public const string Classification         = "v";
         public const string ClassificationOverride = "!v";
         public const string ElementFlags           = "a";
+        public const string FamilyType             = "t";
         public const string Name                   = "n";
         public const string NameOverride           = "!n";
         public const string Level                  = "l";
@@ -61,6 +62,12 @@
         public const long Virtual           = 0x03000000;
     }
 
+    public static class KeyFlags
+    {
+        public const long Physical = 0x00000000;
+        public const long Logical  = 0x01000000;
+    }
+
     public static class QualifiedColumns
     {
         public const string ElementFlags           = $"{ColumnFamilies.Standard}:{ColumnNames.ElementFlags}";
@@ -75,6 +82,7 @@
         public const string UniformatClassOverride = $"{ColumnFamilies.Standard}:{ColumnNames.UniformatClassOverride}";
         public const string Elevation              = $"{ColumnFamilies.Standard}:{ColumnNames.Elevation}";
         public const string ElevationOverride      = $"{ColumnFamilies.Standard}:{ColumnNames.ElevationOverride}";
+        public const string FamilyType             = $"{ColumnFamilies.Refs}:{ColumnNames.FamilyType}";
         public const string Level                  = $"{ColumnFamilies.Refs}:{ColumnNames.Level}";
         public const string LevelOverride          = $"{ColumnFamilies.Refs}:{ColumnNames.LevelOverride}";
         public const string Parent                 = $"{ColumnFamilies.Refs}:{ColumnNames.Parent}";
