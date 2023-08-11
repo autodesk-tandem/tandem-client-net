@@ -21,6 +21,8 @@
             ClassificationId = element.ClassificationId;
             Level = element.Level;
             LevelKey = element.LevelKey;
+            ParentKey = element.ParentKey;
+            ParentModelId = element.ParentModelId;
             UniformatClassId = element.UniformatClassId;
             Properties = new Dictionary<string, string>();
             foreach (var item in element.Properties)
@@ -40,6 +42,8 @@
         public string? Classification { get; set; }
         public string? Level { get; set; }
         public string? LevelKey { get; set; }
+        public string? ParentKey { get; set; }
+        public string? ParentModelId { get; set; }
         public string? UniformatClassId { get; set; }
 
         public IDictionary<string, string> Properties { get; set; }
