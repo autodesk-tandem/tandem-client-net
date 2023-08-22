@@ -29,3 +29,4 @@ foreach (var item in facility.Links)
 ## Examples
 * [Authentication](./samples/Sample01_Authentication.md)
 * [Read asset properties](./samples/Sample02_ReadAssetProperties.md)
+* [Read type properties](./samples/Sample03_ReadTypeProperties.md)
