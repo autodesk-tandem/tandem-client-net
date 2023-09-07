@@ -1,6 +1,6 @@
 # Read type properties
 
-This sample is follow up to previous (example)[Sample02_ReadAssetProperties.md].
+This sample is follow up to previous [example](Sample02_ReadAssetProperties.md).
 
 In some cases it's necessary to read properties not only from specific element, but also from its type. To obtain type information of an element you need to find its family type (display name = `Common.FamilyType`, id = `l:t`). This returns short key which can be used to obtain type properties.
 
