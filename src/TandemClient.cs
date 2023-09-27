@@ -291,7 +291,11 @@ namespace Autodesk.Tandem.Client
             }
             var response = await ScanAsync(modelId, families.ToArray(), new string[] { elementKey });
 
-            var result = ProcessElements(modelId, schema, response?.Items);
+            if (response == null)
+            {
+                throw new ApplicationException("Failed to obtain elements");
+            }
+            var result = ProcessElements(modelId, schema, response.Items);
 
             if (result.Length != 1)
             {
@@ -317,6 +321,10 @@ namespace Autodesk.Tandem.Client
             }
             var response = await ScanAsync(modelId, families.ToArray(), keys);
 
+            if (response == null)
+            {
+                throw new ApplicationException("Failed to obtain elements");
+            }
             return ProcessElements(modelId, schema, response.Items);
         }
 
@@ -868,9 +876,7 @@ namespace Autodesk.Tandem.Client
                 }
                 if (!string.IsNullOrEmpty(parent))
                 {
-                    element.ParentKey = Encoding.FromShortKey(parent, ElementFlags.SimpleElement);
-                    element.ParentModelId = element.ModelId;
-
+                    element.Parent = (element.ModelId, Encoding.FromShortKey(parent, ElementFlags.SimpleElement));
                 }
                 if (!string.IsNullOrEmpty(xparent))
                 {
@@ -878,8 +884,7 @@ namespace Autodesk.Tandem.Client
 
                     if ((parentModelIds.Length > 0) && (parentKeys.Length > 0))
                     {
-                        element.ParentKey = parentKeys[0];
-                        element.ParentModelId = parentModelIds[0];
+                        element.Parent = (parentModelIds[0], parentKeys[0]);
                     }
                 }
                 if (!string.IsNullOrEmpty(room))
